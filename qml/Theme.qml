@@ -7,6 +7,9 @@ QtObject {
     readonly property color surface0: "#313244"
     readonly property color surface1: "#45475a"
     readonly property color overlay0: "#6c7086"
+    // Card background and border.
+    readonly property color card: "#e6000000"
+    readonly property color border: "#6c7086"
     readonly property color subtext1: "#bac2de"
     readonly property color text: "#cdd6f4"
     readonly property color blue: "#89b4fa"

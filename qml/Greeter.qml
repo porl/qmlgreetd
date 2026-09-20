@@ -16,6 +16,9 @@ QtObject {
         return Qt.resolvedUrl("example/LoginScreen.qml");
     }
 
+    // Optional background image; empty means no wallpaper.
+    readonly property string wallpaper: Quickshell.env("QMLGREETD_WALLPAPER") || ""
+
     property bool connected: false
     property bool busy: false
     property string stage: "login"

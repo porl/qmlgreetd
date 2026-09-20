@@ -14,6 +14,9 @@ FocusScope {
     readonly property color cSurface0: theme ? theme.surface0 : "#313244"
     readonly property color cSurface1: theme ? theme.surface1 : "#45475a"
     readonly property color cOverlay: theme ? theme.overlay0 : "#6c7086"
+    readonly property color cCard: theme ? theme.card : "#e6000000"
+    readonly property color cBorder: theme ? theme.border : "#6c7086"
+    readonly property string cWallpaper: greeter ? greeter.wallpaper : ""
     readonly property color cSubtext: theme ? theme.subtext1 : "#bac2de"
     readonly property color cText: theme ? theme.text : "#cdd6f4"
     readonly property color cAccent: theme ? theme.blue : "#89b4fa"
@@ -53,8 +56,17 @@ FocusScope {
         onTriggered: screen.busyDots = screen.busyDots % 3 + 1
     }
 
+    Image {
+        anchors.fill: parent
+        visible: screen.cWallpaper !== ""
+        source: screen.cWallpaper
+        fillMode: Image.PreserveAspectCrop
+        asynchronous: true
+    }
+
     Rectangle {
         anchors.fill: parent
+        visible: screen.cWallpaper === ""
         color: screen.cBase
     }
 
@@ -118,9 +130,9 @@ FocusScope {
         width: 360
         height: layout.implicitHeight + 40
         radius: screen.cRadius
-        color: screen.cSurface0
+        color: screen.cCard
         border.width: 1
-        border.color: screen.cSurface1
+        border.color: screen.cBorder
 
         ColumnLayout {
             id: layout
@@ -242,13 +254,14 @@ FocusScope {
                 font.family: screen.cFont
                 echoMode: TextInput.Password
                 placeholderText: "Password"
+                placeholderTextColor: screen.cOverlay
                 leftPadding: 12
                 rightPadding: 12
                 background: Rectangle {
                     radius: 8
-                    color: screen.cMantle
+                    color: screen.cSurface0
                     border.width: 1
-                    border.color: passwordField.activeFocus ? screen.cAccent : screen.cSurface1
+                    border.color: passwordField.activeFocus ? screen.cAccent : screen.cBorder
                 }
                 onVisibleChanged: if (visible) forceActiveFocus()
                 onAccepted: {
@@ -283,7 +296,7 @@ FocusScope {
                 Text {
                     Layout.fillWidth: true
                     visible: screen.enteringPassword
-                    color: screen.busy ? screen.cAccent : screen.cOverlay
+                    color: screen.busy ? screen.cAccent : screen.cSubtext
                     font.family: screen.cFont
                     font.pixelSize: 11
                     text: screen.busy ? screen.busyLabel : "Enter to sign in"
@@ -395,13 +408,14 @@ FocusScope {
                 font.family: screen.cFont
                 echoMode: greeter && greeter.promptKind === "secret" ? TextInput.Password : TextInput.Normal
                 placeholderText: "Response"
+                placeholderTextColor: screen.cOverlay
                 leftPadding: 12
                 rightPadding: 12
                 background: Rectangle {
                     radius: 8
-                    color: screen.cMantle
+                    color: screen.cSurface0
                     border.width: 1
-                    border.color: promptField.activeFocus ? screen.cAccent : screen.cSurface1
+                    border.color: promptField.activeFocus ? screen.cAccent : screen.cBorder
                 }
                 onVisibleChanged: if (visible) forceActiveFocus()
                 onAccepted: {
@@ -490,9 +504,9 @@ FocusScope {
                 width: 120
                 height: 34
                 radius: 8
-                color: restartArea.containsMouse ? screen.cSurface1 : screen.cMantle
+                color: restartArea.containsMouse ? screen.cSurface1 : screen.cCard
                 border.width: 1
-                border.color: screen.cSurface1
+                border.color: screen.cBorder
 
                 Text {
                     anchors.centerIn: parent
@@ -517,9 +531,9 @@ FocusScope {
                 width: 120
                 height: 34
                 radius: 8
-                color: offArea.containsMouse ? screen.cSurface1 : screen.cMantle
+                color: offArea.containsMouse ? screen.cSurface1 : screen.cCard
                 border.width: 1
-                border.color: screen.cSurface1
+                border.color: screen.cBorder
 
                 Text {
                     anchors.centerIn: parent
@@ -546,7 +560,7 @@ FocusScope {
             radius: 20
             color: powerArea.containsMouse || screen.powerMenuOpen ? screen.cSurface1 : screen.cMantle
             border.width: 1
-            border.color: screen.cSurface1
+            border.color: screen.cBorder
 
             Text {
                 anchors.centerIn: parent
