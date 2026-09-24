@@ -70,10 +70,19 @@ if [[ -z "${QMLGREETD_QS_WRAPPER:-}" && ! -e /run/opengl-driver ]]; then
     echo "dev-greeter:   QMLGREETD_QS_WRAPPER='nix run --impure github:nix-community/nixGL --' $0" >&2
 fi
 
+# The shared components live in qcommon; merge the two trees so the QML
+# resolves by name, matching the packaged tree.
+qcommon="${QMLGREETD_COMMON:-$repo/../qcommon/qml}"
+merged="$(mktemp -d)"
+cleanup_qml() { rm -rf "$merged"; }
+trap 'cleanup_qml; cleanup' EXIT INT TERM
+cp -r "$qcommon"/. "$merged"/
+cp -r "$repo/qml"/. "$merged"/
+
 GREETD_SOCK="$socket" \
     QMLGREETD_BIN="$binary" \
     QMLGREETD_MOCK=1 \
     QMLGREETD_POWER=mock \
     QMLGREETD_STATE="$state" \
     QT_WAYLAND_DISABLE_WINDOWDECORATION=1 \
-    "${qs_wrapper[@]}" "$quickshell" --path "$repo/qml"
+    "${qs_wrapper[@]}" "$quickshell" --path "$merged"

@@ -13,7 +13,7 @@ QtObject {
         var custom = Quickshell.env("QMLGREETD_UI");
         if (custom)
             return Qt.resolvedUrl(custom);
-        return Qt.resolvedUrl("example/LoginScreen.qml");
+        return Qt.resolvedUrl("LoginScreen.qml");
     }
 
     // Optional background image; empty means no wallpaper.

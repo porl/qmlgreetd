@@ -4,6 +4,8 @@ use std::process::Command;
 pub enum Action {
     PowerOff,
     Reboot,
+    Suspend,
+    Hibernate,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -17,6 +19,8 @@ pub fn parse_action(value: &str) -> Option<Action> {
     match value {
         "off" | "poweroff" | "shutdown" => Some(Action::PowerOff),
         "reboot" | "restart" => Some(Action::Reboot),
+        "suspend" | "sleep" => Some(Action::Suspend),
+        "hibernate" => Some(Action::Hibernate),
         _ => None,
     }
 }
@@ -33,6 +37,8 @@ pub fn command(action: Action) -> [&'static str; 2] {
     match action {
         Action::PowerOff => ["systemctl", "poweroff"],
         Action::Reboot => ["systemctl", "reboot"],
+        Action::Suspend => ["systemctl", "suspend"],
+        Action::Hibernate => ["systemctl", "hibernate"],
     }
 }
 
@@ -64,7 +70,10 @@ mod tests {
         assert_eq!(parse_action("off"), Some(Action::PowerOff));
         assert_eq!(parse_action("shutdown"), Some(Action::PowerOff));
         assert_eq!(parse_action("reboot"), Some(Action::Reboot));
-        assert_eq!(parse_action("sleep"), None);
+        assert_eq!(parse_action("suspend"), Some(Action::Suspend));
+        assert_eq!(parse_action("sleep"), Some(Action::Suspend));
+        assert_eq!(parse_action("hibernate"), Some(Action::Hibernate));
+        assert_eq!(parse_action("nonsense"), None);
 
         assert_eq!(parse_mode(Some("mock")), Mode::Mock);
         assert_eq!(parse_mode(Some("systemctl")), Mode::Systemctl);
@@ -76,6 +85,8 @@ mod tests {
     fn maps_actions_to_systemctl() {
         assert_eq!(command(Action::PowerOff), ["systemctl", "poweroff"]);
         assert_eq!(command(Action::Reboot), ["systemctl", "reboot"]);
+        assert_eq!(command(Action::Suspend), ["systemctl", "suspend"]);
+        assert_eq!(command(Action::Hibernate), ["systemctl", "hibernate"]);
     }
 
     #[test]

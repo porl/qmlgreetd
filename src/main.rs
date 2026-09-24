@@ -16,7 +16,7 @@ commands:
   transport     bridge greetd IPC to line-delimited JSON on stdio
   enumerate     list login users, sessions, and remembered selections
   remember      record the last user and their session
-  power         shut down or reboot (off|reboot)
+  power         shut down, reboot, suspend or hibernate (off|reboot|suspend|hibernate)
   mock-greetd   run the fake greetd backend (development only)";
 
 fn main() -> ExitCode {

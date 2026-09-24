@@ -2,9 +2,13 @@
   description = "qmlgreetd - a customizable Quickshell greeter for greetd";
 
   inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-26.05";
+  inputs.qcommon = {
+    url = "github:porl/qcommon";
+    inputs.nixpkgs.follows = "nixpkgs";
+  };
 
   outputs =
-    { self, nixpkgs }:
+    { self, nixpkgs, qcommon }:
     let
       systems = [
         "x86_64-linux"
@@ -30,11 +34,14 @@
           };
         };
 
+      # Shared qcommon components are copied in first, then the greeter's own
+      # QML, so both resolve by name through QML's implicit directory import.
       qmlTree =
         pkgs:
         pkgs.runCommand "qmlgreetd-qml" { } ''
-          mkdir -p $out/share/qmlgreetd
-          cp -r ${./qml} $out/share/qmlgreetd/qml
+          mkdir -p $out/share/qmlgreetd/qml
+          cp -r ${qcommon.packages.${pkgs.stdenv.hostPlatform.system}.default}/share/qcommon/qml/. $out/share/qmlgreetd/qml/
+          cp -r ${./qml}/. $out/share/qmlgreetd/qml/
         '';
 
       greeter =

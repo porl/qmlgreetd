@@ -16,9 +16,30 @@
         "type": "github"
       }
     },
+    "qcommon": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1790223475,
+        "narHash": "sha256-ErTy8IgEIKjTnUti/u+xmYjWRCBSTLxIUIAP6JYFhaQ=",
+        "owner": "porl",
+        "repo": "qcommon",
+        "rev": "e8ccdc6592ae724515cc4688f62855d313454374",
+        "type": "github"
+      },
+      "original": {
+        "owner": "porl",
+        "repo": "qcommon",
+        "type": "github"
+      }
+    },
     "root": {
       "inputs": {
-        "nixpkgs": "nixpkgs"
+        "nixpkgs": "nixpkgs",
+        "qcommon": "qcommon"
       }
     }
   },

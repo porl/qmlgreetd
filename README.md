@@ -1,22 +1,26 @@
 # qmlgreetd
 
 A customizable [Quickshell](https://quickshell.org) greeter for
-[greetd](https://git.sr.ht/~kennylevinsen/greetd). It draws a minimal login card
-over a blank compositor and speaks greetd's IPC protocol through a small Rust
+[greetd](https://git.sr.ht/~kennylevinsen/greetd). It draws a login card over a
+Hyprland layer shell and speaks greetd's IPC protocol through a small Rust
 transport process.
 
 The project is a "blank greeter shell": the transport and auth logic are the
 product, and the login/session screen is a swappable Quickshell component. The
-bundled UI under `qml/example/` is an example, not the coupling point.
+bundled UI (`qml/LoginScreen.qml`) is an example, not the coupling point.
 
 ## Status
 
 Implemented and tested: the greetd transport, auth state machine, enumeration,
-`Exec` parsing, the fake backend, the example UI (user preselect, parallel
-session choice, type-and-Enter login, power menu), remembered state, and a
-watchdog. The default package bundles the binary, the QML tree, and a
-`qmlgreetd-greeter` runner for a compositor. Not yet done: AccountsService
-enrichment, suspend, the JSON config file, and real-host validation.
+`Exec` parsing, the fake backend, the bundled UI (user preselect, parallel
+session choice, type-and-Enter login, remembered state) and a watchdog. The
+bundled UI runs on Hyprland and shares the [qcommon](../qcommon) bar, popouts
+and session menu with the session shell, so the login screen has the same power
+block, network/brightness popouts and capability-aware session menu. Power
+actions go through `qmlgreetd power` (`off`, `reboot`, `suspend`, `hibernate`;
+gated by `QMLGREETD_POWER`). The default package bundles the binary, the merged
+QML tree, and a `qmlgreetd-greeter` runner. Not yet done: AccountsService
+enrichment, the JSON config file, and real-host validation.
 
 ## Try the UI against the fake backend
 
@@ -34,9 +38,10 @@ The host-provided `quickshell` on some systems (e.g. a `noctalia-qs` fork) may b
 broken or incompatible; `nix develop` puts a known-good `quickshell` 0.3.0 on
 `PATH`, and the launcher uses that.
 
-The UI opens fullscreen as a plain toplevel (`FloatingWindow`, not a
-layer-shell `PanelWindow` — cage has no `wlr-layer-shell`). Press **Ctrl+Q** to
-quit (which also tears down the fake backend).
+The UI opens fullscreen on Hyprland's layer shell (a background
+`PanelWindow` for the card, a `PanelWindow` bar on top, and the shared session
+menu on the overlay layer). Press **Ctrl+Q** to quit (which also tears down the
+fake backend).
 
 On a non-NixOS host the nix-built Quickshell cannot see the host EGL/GPU stack
 and fails with `EGL not available`. Lend it the host drivers with `nixGL`:

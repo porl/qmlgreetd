@@ -1,3 +1,6 @@
+// The login card, drawn over the wallpaper. The host (shell.qml) supplies the
+// bar, the clock and the session menu; this file is only the card, so it stays
+// swappable via QMLGREETD_UI.
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -10,19 +13,21 @@ FocusScope {
 
     readonly property var theme: greeter ? greeter.theme : null
     readonly property color cBase: theme ? theme.base : "#000000"
-    readonly property color cMantle: theme ? theme.mantle : "#181825"
-    readonly property color cSurface0: theme ? theme.surface0 : "#313244"
-    readonly property color cSurface1: theme ? theme.surface1 : "#45475a"
-    readonly property color cOverlay: theme ? theme.overlay0 : "#6c7086"
-    readonly property color cCard: theme ? theme.card : "#e6000000"
+    readonly property color cSurface: theme ? theme.surface : "#e6000000"
+    readonly property color cSurfaceAlt: theme ? theme.surfaceAlt : "#45475a"
     readonly property color cBorder: theme ? theme.border : "#6c7086"
-    readonly property string cWallpaper: greeter ? greeter.wallpaper : ""
-    readonly property color cSubtext: theme ? theme.subtext1 : "#bac2de"
+    readonly property color cOverlay: theme ? theme.overlay : "#6c7086"
+    readonly property color cSubtext: theme ? theme.subtext : "#bac2de"
     readonly property color cText: theme ? theme.text : "#cdd6f4"
-    readonly property color cAccent: theme ? theme.blue : "#89b4fa"
-    readonly property color cRed: theme ? theme.red : "#f38ba8"
+    readonly property color cAccent: theme ? theme.accent : "#89b4fa"
+    readonly property color cDanger: theme ? theme.danger : "#f38ba8"
     readonly property int cRadius: theme ? theme.radius : 16
     readonly property string cFont: theme ? theme.fontFamily : "sans-serif"
+    readonly property int cFontSize: theme ? theme.fontSize : 16
+    readonly property int cFontSmall: theme ? theme.fontSizeSmall : 14
+    readonly property int cFontTiny: theme ? theme.fontSizeTiny : 12
+
+    readonly property string cWallpaper: greeter ? greeter.wallpaper : ""
 
     readonly property bool hasUser: greeter !== null && greeter.chosenUser.length > 0
     readonly property bool choosingUser: greeter !== null && greeter.usersExpanded
@@ -31,7 +36,6 @@ FocusScope {
     readonly property bool enteringPrompt: greeter !== null && greeter.stage === "prompt"
     readonly property bool busy: greeter !== null && greeter.busy
 
-    property bool powerMenuOpen: false
     property int busyDots: 1
     readonly property string busyLabel: "Signing in" + [".", "..", "..."][(busyDots - 1) % 3]
 
@@ -70,59 +74,6 @@ FocusScope {
         color: screen.cBase
     }
 
-    Item {
-        id: topBar
-
-        anchors {
-            top: parent.top
-            left: parent.left
-            right: parent.right
-        }
-
-        height: 40
-
-        Text {
-            anchors {
-                left: parent.left
-                leftMargin: 20
-                verticalCenter: parent.verticalCenter
-            }
-
-            color: screen.cSubtext
-            font.family: screen.cFont
-            font.pixelSize: 13
-            text: hostnameFile.text().trim()
-        }
-
-        Text {
-            id: clock
-
-            anchors {
-                horizontalCenter: parent.horizontalCenter
-                verticalCenter: parent.verticalCenter
-            }
-
-            color: screen.cSubtext
-            font.family: screen.cFont
-            font.pixelSize: 13
-            font.bold: true
-            text: Qt.formatDateTime(new Date(), "HH:mm")
-
-            Timer {
-                interval: 1000
-                running: true
-                repeat: true
-                onTriggered: clock.text = Qt.formatDateTime(new Date(), "HH:mm")
-            }
-        }
-    }
-
-    FileView {
-        id: hostnameFile
-        path: "/etc/hostname"
-        blockLoading: true
-    }
-
     Rectangle {
         id: card
 
@@ -130,7 +81,7 @@ FocusScope {
         width: 360
         height: layout.implicitHeight + 40
         radius: screen.cRadius
-        color: screen.cCard
+        color: screen.cSurface
         border.width: 1
         border.color: screen.cBorder
 
@@ -153,7 +104,7 @@ FocusScope {
                     text: "←"
                     color: backArea.containsMouse ? screen.cText : screen.cOverlay
                     font.family: screen.cFont
-                    font.pixelSize: 18
+                    font.pixelSize: screen.cFontSize + 2
 
                     MouseArea {
                         id: backArea
@@ -168,7 +119,7 @@ FocusScope {
                     Layout.fillWidth: true
                     color: screen.cText
                     font.family: screen.cFont
-                    font.pixelSize: 20
+                    font.pixelSize: screen.cFontSize + 4
                     font.bold: true
                     elide: Text.ElideRight
                     text: {
@@ -203,7 +154,7 @@ FocusScope {
                     width: ListView.view.width
                     height: 40
                     radius: 8
-                    color: index === (greeter ? greeter.userCursor : -1) ? screen.cSurface1 : "transparent"
+                    color: index === (greeter ? greeter.userCursor : -1) ? screen.cSurfaceAlt : "transparent"
 
                     Text {
                         anchors {
@@ -214,7 +165,7 @@ FocusScope {
 
                         color: screen.cText
                         font.family: screen.cFont
-                        font.pixelSize: 15
+                        font.pixelSize: screen.cFontSmall
                         text: modelData.display_name || modelData.username
                     }
 
@@ -252,6 +203,7 @@ FocusScope {
                 opacity: screen.busy ? 0.5 : 1.0
                 color: screen.cText
                 font.family: screen.cFont
+                font.pixelSize: screen.cFontSmall
                 echoMode: TextInput.Password
                 placeholderText: "Password"
                 placeholderTextColor: screen.cOverlay
@@ -259,7 +211,7 @@ FocusScope {
                 rightPadding: 12
                 background: Rectangle {
                     radius: 8
-                    color: screen.cSurface0
+                    color: screen.cSurfaceAlt
                     border.width: 1
                     border.color: passwordField.activeFocus ? screen.cAccent : screen.cBorder
                 }
@@ -298,7 +250,7 @@ FocusScope {
                     visible: screen.enteringPassword
                     color: screen.busy ? screen.cAccent : screen.cSubtext
                     font.family: screen.cFont
-                    font.pixelSize: 11
+                    font.pixelSize: screen.cFontTiny
                     text: screen.busy ? screen.busyLabel : "Enter to sign in"
                 }
 
@@ -307,12 +259,12 @@ FocusScope {
                     Layout.preferredHeight: 18
                     Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
 
-                    Text {
+                    Glyph {
                         anchors.centerIn: parent
+                        theme: screen.theme
+                        name: "gear"
+                        size: screen.cFontSmall
                         color: sessionArea.containsMouse || screen.choosingSession ? screen.cAccent : screen.cSubtext
-                        font.family: "JetBrainsMono Nerd Font"
-                        font.pixelSize: 15
-                        text: "\uf013"
                     }
 
                     MouseArea {
@@ -348,7 +300,7 @@ FocusScope {
                     width: ListView.view.width
                     height: 32
                     radius: 6
-                    color: index === (greeter ? greeter.sessionCursor : -1) ? screen.cSurface1 : "transparent"
+                    color: index === (greeter ? greeter.sessionCursor : -1) ? screen.cSurfaceAlt : "transparent"
 
                     Text {
                         anchors {
@@ -359,7 +311,7 @@ FocusScope {
 
                         color: screen.cSubtext
                         font.family: screen.cFont
-                        font.pixelSize: 13
+                        font.pixelSize: screen.cFontTiny
                         text: modelData.name
                     }
 
@@ -392,7 +344,7 @@ FocusScope {
                 visible: screen.enteringPrompt && greeter.promptText.length > 0
                 color: screen.cSubtext
                 font.family: screen.cFont
-                font.pixelSize: 14
+                font.pixelSize: screen.cFontSmall
                 text: greeter ? greeter.promptText : ""
             }
 
@@ -406,6 +358,7 @@ FocusScope {
                 opacity: screen.busy ? 0.5 : 1.0
                 color: screen.cText
                 font.family: screen.cFont
+                font.pixelSize: screen.cFontSmall
                 echoMode: greeter && greeter.promptKind === "secret" ? TextInput.Password : TextInput.Normal
                 placeholderText: "Response"
                 placeholderTextColor: screen.cOverlay
@@ -413,7 +366,7 @@ FocusScope {
                 rightPadding: 12
                 background: Rectangle {
                     radius: 8
-                    color: screen.cSurface0
+                    color: screen.cSurfaceAlt
                     border.width: 1
                     border.color: promptField.activeFocus ? screen.cAccent : screen.cBorder
                 }
@@ -435,7 +388,7 @@ FocusScope {
                     Layout.fillWidth: true
                     color: screen.cSubtext
                     font.family: screen.cFont
-                    font.pixelSize: 13
+                    font.pixelSize: screen.cFontTiny
                     text: greeter ? "User · " + greeter.chosenUser : ""
                 }
 
@@ -443,7 +396,7 @@ FocusScope {
                     Layout.fillWidth: true
                     color: screen.cSubtext
                     font.family: screen.cFont
-                    font.pixelSize: 13
+                    font.pixelSize: screen.cFontTiny
                     text: greeter && greeter.chosenSession ? "Session · " + greeter.chosenSession.name : ""
                 }
 
@@ -451,7 +404,7 @@ FocusScope {
                     Layout.fillWidth: true
                     color: screen.cOverlay
                     font.family: screen.cFont
-                    font.pixelSize: 11
+                    font.pixelSize: screen.cFontTiny
                     text: greeter && greeter.mock ? "Would start now (mock)." : "Starting…"
                 }
             }
@@ -461,7 +414,7 @@ FocusScope {
                 visible: greeter !== null && greeter.message.length > 0
                 color: screen.cSubtext
                 font.family: screen.cFont
-                font.pixelSize: 13
+                font.pixelSize: screen.cFontTiny
                 wrapMode: Text.WordWrap
                 text: greeter ? greeter.message : ""
             }
@@ -469,111 +422,11 @@ FocusScope {
             Text {
                 Layout.fillWidth: true
                 visible: greeter !== null && greeter.error.length > 0
-                color: screen.cRed
+                color: screen.cDanger
                 font.family: screen.cFont
-                font.pixelSize: 13
+                font.pixelSize: screen.cFontTiny
                 wrapMode: Text.WordWrap
                 text: greeter ? greeter.error : ""
-            }
-        }
-    }
-
-    Item {
-        id: powerControl
-
-        anchors {
-            right: parent.right
-            bottom: parent.bottom
-            margins: 20
-        }
-
-        width: 40
-        height: 40
-
-        Column {
-            anchors {
-                bottom: parent.top
-                bottomMargin: 8
-                right: parent.right
-            }
-
-            spacing: 6
-            visible: screen.powerMenuOpen
-
-            Rectangle {
-                width: 120
-                height: 34
-                radius: 8
-                color: restartArea.containsMouse ? screen.cSurface1 : screen.cCard
-                border.width: 1
-                border.color: screen.cBorder
-
-                Text {
-                    anchors.centerIn: parent
-                    text: "Restart"
-                    color: screen.cText
-                    font.family: screen.cFont
-                    font.pixelSize: 13
-                }
-
-                MouseArea {
-                    id: restartArea
-                    anchors.fill: parent
-                    hoverEnabled: true
-                    onClicked: {
-                        screen.powerMenuOpen = false;
-                        greeter.power("reboot");
-                    }
-                }
-            }
-
-            Rectangle {
-                width: 120
-                height: 34
-                radius: 8
-                color: offArea.containsMouse ? screen.cSurface1 : screen.cCard
-                border.width: 1
-                border.color: screen.cBorder
-
-                Text {
-                    anchors.centerIn: parent
-                    text: "Shut down"
-                    color: screen.cRed
-                    font.family: screen.cFont
-                    font.pixelSize: 13
-                }
-
-                MouseArea {
-                    id: offArea
-                    anchors.fill: parent
-                    hoverEnabled: true
-                    onClicked: {
-                        screen.powerMenuOpen = false;
-                        greeter.power("off");
-                    }
-                }
-            }
-        }
-
-        Rectangle {
-            anchors.fill: parent
-            radius: 20
-            color: powerArea.containsMouse || screen.powerMenuOpen ? screen.cSurface1 : screen.cMantle
-            border.width: 1
-            border.color: screen.cBorder
-
-            Text {
-                anchors.centerIn: parent
-                text: "⏻"
-                color: powerArea.containsMouse ? screen.cRed : screen.cSubtext
-                font.pixelSize: 18
-            }
-
-            MouseArea {
-                id: powerArea
-                anchors.fill: parent
-                hoverEnabled: true
-                onClicked: screen.powerMenuOpen = !screen.powerMenuOpen
             }
         }
     }
@@ -583,9 +436,6 @@ FocusScope {
             return;
         if (event.key === Qt.Key_Q && event.modifiers & Qt.ControlModifier) {
             greeter.quit();
-            event.accepted = true;
-        } else if (event.key === Qt.Key_Escape && screen.powerMenuOpen) {
-            screen.powerMenuOpen = false;
             event.accepted = true;
         }
     }
