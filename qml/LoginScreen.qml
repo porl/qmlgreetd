@@ -62,7 +62,7 @@ FocusScope {
 
     Image {
         anchors.fill: parent
-        visible: screen.cWallpaper !== ""
+        visible: screen.cWallpaper !== "" && !(greeter && greeter.nightSkyActive)
         source: screen.cWallpaper
         fillMode: Image.PreserveAspectCrop
         asynchronous: true
@@ -70,7 +70,7 @@ FocusScope {
 
     Rectangle {
         anchors.fill: parent
-        visible: screen.cWallpaper === ""
+        visible: screen.cWallpaper === "" && !(greeter && greeter.nightSkyActive)
         color: screen.cBase
     }
 

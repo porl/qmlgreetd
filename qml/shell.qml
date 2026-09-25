@@ -11,6 +11,7 @@ import Quickshell
 import Quickshell.Io
 import Quickshell.Wayland
 import QtQuick
+import "NightSkySim.js" as Sim
 
 ShellRoot {
     id: shell
@@ -18,6 +19,33 @@ ShellRoot {
     readonly property Theme theme: Theme {}
     readonly property PowerCaps powerCaps: PowerCaps {}
     property Greeter greeter: Greeter {}
+
+    // The night sky behind the login card. Off by default: the city-vs-card
+    // layer stacking has not been verified on real hardware, and a hidden card
+    // would be a broken login. "greeter" enables it.
+    readonly property int nightSkyMode: Sim.modeFromString(Quickshell.env("QMLGREETD_WALLPAPER_MODE") || "off")
+
+    // Declared before the card so the card's layer surface sits above it.
+    NightSkyWallpaper {
+        id: nightSkyWallpaper
+
+        theme: shell.theme
+        mode: shell.nightSkyMode
+        isGreeter: true
+        fps: parseInt(Quickshell.env("QMLGREETD_WALLPAPER_FPS") || "12")
+        meteorsEnabled: Quickshell.env("QMLGREETD_WALLPAPER_METEORS") !== "0"
+        meteorShowers: Quickshell.env("QMLGREETD_WALLPAPER_SHOWERS") !== "0"
+        buildingsEnabled: Quickshell.env("QMLGREETD_WALLPAPER_BUILDINGS") !== "0"
+        missileCommand: Quickshell.env("QMLGREETD_WALLPAPER_MISSILES") === "1"
+        antialias: Quickshell.env("QMLGREETD_WALLPAPER_ANTIALIAS") !== "0"
+        seed: parseInt(Quickshell.env("QMLGREETD_WALLPAPER_SEED") || "1")
+    }
+
+    Binding {
+        target: shell.greeter
+        property: "nightSkyActive"
+        value: nightSkyWallpaper.show
+    }
 
     Variants {
         model: Quickshell.screens
