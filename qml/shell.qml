@@ -41,9 +41,7 @@ ShellRoot {
     }
 
     // The static image (or a plain base) on its own background surface, so the
-    // login card always has something behind it to blur: when the sky is off it
-    // used to be painted by the card's own surface, which left the blur nothing
-    // to sample.
+    // card always has something behind it to blur when the sky is off.
     Variants {
         model: Quickshell.screens
 
