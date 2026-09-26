@@ -23,10 +23,6 @@ QtObject {
     readonly property bool wallpaperMissiles: config.wallpaperMissiles
     readonly property bool wallpaperAntialias: config.wallpaperAntialias
 
-    // Set by the shell: true while the night sky wallpaper is being drawn, so
-    // the card does not also paint the static image underneath it.
-    property bool nightSkyActive: false
-
     property bool connected: false
     property bool busy: false
     property string stage: "login"

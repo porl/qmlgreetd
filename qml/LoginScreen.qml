@@ -1,6 +1,7 @@
-// The login card, drawn over the wallpaper. The host (shell.qml) supplies the
-// bar, the clock and the session menu; this file is only the card, so it stays
-// swappable via QMLGREETD_UI.
+// The login card, over the shell's background surface (the night sky or the
+// static image). The host (shell.qml) supplies the bar, the clock and the
+// session menu; this file is only the card, so it stays swappable via
+// QMLGREETD_UI.
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -12,7 +13,6 @@ FocusScope {
     property var greeter: null
 
     readonly property var theme: greeter ? greeter.theme : null
-    readonly property color cBase: theme ? theme.base : "#000000"
     readonly property color cSurface: theme ? theme.surface : "#e6000000"
     readonly property color cSurfaceAlt: theme ? theme.surfaceAlt : "#45475a"
     readonly property color cBorder: theme ? theme.border : "#6c7086"
@@ -26,8 +26,6 @@ FocusScope {
     readonly property int cFontSize: theme ? theme.fontSize : 16
     readonly property int cFontSmall: theme ? theme.fontSizeSmall : 14
     readonly property int cFontTiny: theme ? theme.fontSizeTiny : 12
-
-    readonly property string cWallpaper: greeter ? greeter.wallpaper : ""
 
     readonly property bool hasUser: greeter !== null && greeter.chosenUser.length > 0
     readonly property bool choosingUser: greeter !== null && greeter.usersExpanded
@@ -58,20 +56,6 @@ FocusScope {
         interval: 400
         repeat: true
         onTriggered: screen.busyDots = screen.busyDots % 3 + 1
-    }
-
-    Image {
-        anchors.fill: parent
-        visible: screen.cWallpaper !== "" && !(greeter && greeter.nightSkyActive)
-        source: screen.cWallpaper
-        fillMode: Image.PreserveAspectCrop
-        asynchronous: true
-    }
-
-    Rectangle {
-        anchors.fill: parent
-        visible: screen.cWallpaper === "" && !(greeter && greeter.nightSkyActive)
-        color: screen.cBase
     }
 
     Rectangle {

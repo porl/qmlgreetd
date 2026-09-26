@@ -40,10 +40,43 @@ ShellRoot {
         seed: shell.greeter.wallpaperSeed
     }
 
-    Binding {
-        target: shell.greeter
-        property: "nightSkyActive"
-        value: nightSkyWallpaper.show
+    // The static image (or a plain base) on its own background surface, so the
+    // login card always has something behind it to blur: when the sky is off it
+    // used to be painted by the card's own surface, which left the blur nothing
+    // to sample.
+    Variants {
+        model: Quickshell.screens
+
+        delegate: PanelWindow {
+            required property ShellScreen modelData
+
+            screen: modelData
+            anchors {
+                top: true
+                left: true
+                right: true
+                bottom: true
+            }
+            color: "transparent"
+            exclusionMode: ExclusionMode.Ignore
+            WlrLayershell.layer: WlrLayer.Background
+            WlrLayershell.namespace: "quickshell-greeter-bg"
+            visible: !nightSkyWallpaper.show
+
+            Image {
+                anchors.fill: parent
+                visible: shell.greeter.wallpaper !== ""
+                source: shell.greeter.wallpaper
+                fillMode: Image.PreserveAspectCrop
+                asynchronous: true
+            }
+
+            Rectangle {
+                anchors.fill: parent
+                visible: shell.greeter.wallpaper === ""
+                color: shell.theme.base
+            }
+        }
     }
 
     Variants {
