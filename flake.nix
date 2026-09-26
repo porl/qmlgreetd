@@ -72,6 +72,25 @@
       checks = forAllSystems (pkgs: {
         build = qmlgreetd pkgs;
 
+        # The pure config resolution (qml/GreeterConfig.js), like qcommon's
+        # NightSkySim tests: qmltestrunner offscreen, no Wayland needed. The
+        # source is copied by directory rather than as the flake tree, so a new
+        # test is gated before it is committed.
+        tests = pkgs.runCommand "qmlgreetd-tests" {
+          nativeBuildInputs = [ pkgs.qt6.qtdeclarative ];
+        } ''
+          mkdir src
+          cp -r ${./qml} src/qml
+          cp -r ${./tests} src/tests
+          cd src
+          export HOME=$TMPDIR
+          export XDG_CACHE_HOME=$TMPDIR/cache
+          export QT_QPA_PLATFORM=offscreen
+          export QML2_IMPORT_PATH="${pkgs.qt6.qtdeclarative}/lib/qt-6/qml"
+          qmltestrunner -input tests
+          touch $out
+        '';
+
         clippy = pkgs.rustPlatform.buildRustPackage {
           pname = "qmlgreetd-clippy";
           version = "0.1.0";

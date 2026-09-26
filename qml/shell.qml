@@ -20,25 +20,24 @@ ShellRoot {
     readonly property PowerCaps powerCaps: PowerCaps {}
     property Greeter greeter: Greeter {}
 
-    // The night sky behind the login card. Off by default: the city-vs-card
-    // layer stacking has not been verified on real hardware, and a hidden card
-    // would be a broken login. "greeter" enables it.
-    readonly property int nightSkyMode: Sim.modeFromString(Quickshell.env("QMLGREETD_WALLPAPER_MODE") || "off")
+    // The night sky behind the login card. The mode and toggles come from the
+    // greeter config (GreeterConfig.qml); the card sits on a higher layer (see
+    // its PanelWindow below).
+    readonly property int nightSkyMode: Sim.modeFromString(shell.greeter.wallpaperMode)
 
-    // Declared before the card so the card's layer surface sits above it.
     NightSkyWallpaper {
         id: nightSkyWallpaper
 
         theme: shell.theme
         mode: shell.nightSkyMode
         isGreeter: true
-        fps: parseInt(Quickshell.env("QMLGREETD_WALLPAPER_FPS") || "12")
-        meteorsEnabled: Quickshell.env("QMLGREETD_WALLPAPER_METEORS") !== "0"
-        meteorShowers: Quickshell.env("QMLGREETD_WALLPAPER_SHOWERS") !== "0"
-        buildingsEnabled: Quickshell.env("QMLGREETD_WALLPAPER_BUILDINGS") !== "0"
-        missileCommand: Quickshell.env("QMLGREETD_WALLPAPER_MISSILES") === "1"
-        antialias: Quickshell.env("QMLGREETD_WALLPAPER_ANTIALIAS") !== "0"
-        seed: parseInt(Quickshell.env("QMLGREETD_WALLPAPER_SEED") || "1")
+        fps: shell.greeter.wallpaperFps
+        meteorsEnabled: shell.greeter.wallpaperMeteors
+        meteorShowers: shell.greeter.wallpaperShowers
+        buildingsEnabled: shell.greeter.wallpaperBuildings
+        missileCommand: shell.greeter.wallpaperMissiles
+        antialias: shell.greeter.wallpaperAntialias
+        seed: shell.greeter.wallpaperSeed
     }
 
     Binding {
@@ -75,7 +74,13 @@ ShellRoot {
             }
             color: "transparent"
             exclusionMode: ExclusionMode.Ignore
-            WlrLayershell.layer: WlrLayer.Background
+            // Bottom, NOT Background: the night sky is a Background surface on
+            // the same screen, and layer-shell orders surfaces within a layer by
+            // map order, not QML declaration order — the sky mapped above the
+            // card and hid it (observed: hyprctl layers showed the card first in
+            // the Background level). Bottom is always above every Background
+            // surface and still below the bar (Top) and the menu (Overlay).
+            WlrLayershell.layer: WlrLayer.Bottom
             // OnDemand, NOT Exclusive: Hyprland hit-tests exclusive-keyboard
             // layer surfaces before everything else ("forced above all") and
             // hands them the pointer even when it is not over them, so an

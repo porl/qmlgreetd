@@ -13,14 +13,46 @@ bundled UI (`qml/LoginScreen.qml`) is an example, not the coupling point.
 
 Implemented and tested: the greetd transport, auth state machine, enumeration,
 `Exec` parsing, the fake backend, the bundled UI (user preselect, parallel
-session choice, type-and-Enter login, remembered state) and a watchdog. The
-bundled UI runs on Hyprland and shares the [qcommon](../qcommon) bar, popouts
-and session menu with the session shell, so the login screen has the same power
-block, network/brightness popouts and capability-aware session menu. Power
-actions go through `qmlgreetd power` (`off`, `reboot`, `suspend`, `hibernate`;
-gated by `QMLGREETD_POWER`). The default package bundles the binary, the merged
-QML tree, and a `qmlgreetd-greeter` runner. Not yet done: AccountsService
-enrichment, the JSON config file, and real-host validation.
+session choice, type-and-Enter login, remembered state), a watchdog and the
+JSON config file. The bundled UI runs on Hyprland and shares the
+[qcommon](../qcommon) bar, popouts and session menu with the session shell, so
+the login screen has the same power block, network/brightness popouts and
+capability-aware session menu. Power actions go through `qmlgreetd power` (`off`,
+`reboot`, `suspend`, `hibernate`; gated by `QMLGREETD_POWER`). The default
+package bundles the binary, the merged QML tree, and a `qmlgreetd-greeter`
+runner. Not yet done: AccountsService enrichment and real-host validation.
+
+## Configuration
+
+The greeter reads `/etc/qmlgreetd/config.json` once at startup. It is the
+deployment's look; every key also has a `QMLGREETD_*` environment fallback and a
+built-in default, so a missing (or malformed) file never costs a login. The file
+wins over the environment.
+
+| key | environment fallback | default | meaning |
+|---|---|---|---|
+| `ui` | `QMLGREETD_UI` | bundled `LoginScreen.qml` | custom login screen |
+| `wallpaper` | `QMLGREETD_WALLPAPER` | none | static background image |
+| `wallpaperMode` | `QMLGREETD_WALLPAPER_MODE` | `off` | night sky: `off`, `greeter`, `idle`, `always` |
+| `wallpaperFps` | `QMLGREETD_WALLPAPER_FPS` | `12` | night-sky animation clock |
+| `wallpaperSeed` | `QMLGREETD_WALLPAPER_SEED` | `1` | skyline seed |
+| `wallpaperMeteors` | `QMLGREETD_WALLPAPER_METEORS` | `true` | meteors |
+| `wallpaperShowers` | `QMLGREETD_WALLPAPER_SHOWERS` | `true` | occasional meteor showers |
+| `wallpaperBuildings` | `QMLGREETD_WALLPAPER_BUILDINGS` | `true` | the city |
+| `wallpaperMissiles` | `QMLGREETD_WALLPAPER_MISSILES` | `false` | missile command |
+| `wallpaperAntialias` | `QMLGREETD_WALLPAPER_ANTIALIAS` | `true` | antialiased sky dots |
+
+`QMLGREETD_CONFIG` points the greeter at a different file (development runs):
+
+```json
+{
+  "wallpaperMode": "greeter",
+  "wallpaperFps": 6
+}
+```
+
+Power actions are deliberately not part of the config: `QMLGREETD_POWER` is a
+capability the runner grants, not a look.
 
 ## Try the UI against the fake backend
 

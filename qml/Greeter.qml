@@ -9,15 +9,19 @@ QtObject {
 
     readonly property string binary: Quickshell.env("QMLGREETD_BIN") || "qmlgreetd"
     readonly property bool mock: Quickshell.env("QMLGREETD_MOCK") === "1"
-    readonly property url uiPath: {
-        var custom = Quickshell.env("QMLGREETD_UI");
-        if (custom)
-            return Qt.resolvedUrl(custom);
-        return Qt.resolvedUrl("LoginScreen.qml");
-    }
 
-    // Optional background image; empty means no wallpaper.
-    readonly property string wallpaper: Quickshell.env("QMLGREETD_WALLPAPER") || ""
+    // The deployed look (config file, then QMLGREETD_* environment fallbacks).
+    property GreeterConfig config: GreeterConfig {}
+    readonly property url uiPath: config.ui !== "" ? Qt.resolvedUrl(config.ui) : Qt.resolvedUrl("LoginScreen.qml")
+    readonly property string wallpaper: config.wallpaper
+    readonly property string wallpaperMode: config.wallpaperMode
+    readonly property int wallpaperFps: config.wallpaperFps
+    readonly property int wallpaperSeed: config.wallpaperSeed
+    readonly property bool wallpaperMeteors: config.wallpaperMeteors
+    readonly property bool wallpaperShowers: config.wallpaperShowers
+    readonly property bool wallpaperBuildings: config.wallpaperBuildings
+    readonly property bool wallpaperMissiles: config.wallpaperMissiles
+    readonly property bool wallpaperAntialias: config.wallpaperAntialias
 
     // Set by the shell: true while the night sky wallpaper is being drawn, so
     // the card does not also paint the static image underneath it.
