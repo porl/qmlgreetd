@@ -5,7 +5,7 @@ import Quickshell.Io
 QtObject {
     id: greeter
 
-    property Theme theme: Theme {}
+    property Theme theme: Theme { palette: config.theme }
 
     readonly property string binary: Quickshell.env("QMLGREETD_BIN") || "qmlgreetd"
     readonly property bool mock: Quickshell.env("QMLGREETD_MOCK") === "1"
@@ -22,6 +22,9 @@ QtObject {
     readonly property bool wallpaperBuildings: config.wallpaperBuildings
     readonly property bool wallpaperMissiles: config.wallpaperMissiles
     readonly property bool wallpaperAntialias: config.wallpaperAntialias
+    // The colour overrides the deployment supplied, so the shell's own Theme
+    // instance (bar, wallpaper) matches the login card's.
+    readonly property var themePalette: config.theme
 
     property bool connected: false
     property bool busy: false

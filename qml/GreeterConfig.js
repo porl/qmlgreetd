@@ -18,6 +18,37 @@ var DEFAULTS = {
     wallpaperAntialias: true
 };
 
+// The theme block is a set of hex overrides for the colour roles in qcommon's
+// Theme.qml (base, backdrop, surface, surfaceAlt, border, bar, text, subtext,
+// overlay, accent, danger, skyTop, skyBottom, buildingGlow, starGlow, moonGlow,
+// missileTrail, explosionGlow). Roles the deployment does not name keep their
+// default; the "default" here is an empty override set, so whatever survives
+// resolution is merged over the role defaults by Theme itself.
+var COLOR = /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/;
+
+// A theme block from the file is an object; QMLGREETD_THEME is a JSON string.
+// Anything else is an empty table.
+function colorTable(value) {
+    var table = typeof value === "string" ? parse(value) : value;
+    if (!table || typeof table !== "object" || Array.isArray(table))
+        return {};
+    return table;
+}
+
+// Only hex-colour values survive, validated per layer, so a typo in the file
+// falls through to the environment value and then to the role default.
+function themeOf(envValue, fileValue) {
+    var tables = [ colorTable(envValue), colorTable(fileValue) ];
+    var result = {};
+    for (var i = 0; i < tables.length; i++) {
+        for (var key in tables[i]) {
+            if (typeof tables[i][key] === "string" && COLOR.test(tables[i][key]))
+                result[key] = tables[i][key];
+        }
+    }
+    return result;
+}
+
 // The night-sky modes (NightSkySim.js); anything else in the config would
 // otherwise fall through to "always".
 var MODES = [ "always", "idle", "greeter", "off" ];
@@ -86,6 +117,7 @@ function resolve(env, text) {
         wallpaperShowers: pick(boolOf, env.wallpaperShowers, file.wallpaperShowers, DEFAULTS.wallpaperShowers),
         wallpaperBuildings: pick(boolOf, env.wallpaperBuildings, file.wallpaperBuildings, DEFAULTS.wallpaperBuildings),
         wallpaperMissiles: pick(boolOf, env.wallpaperMissiles, file.wallpaperMissiles, DEFAULTS.wallpaperMissiles),
-        wallpaperAntialias: pick(boolOf, env.wallpaperAntialias, file.wallpaperAntialias, DEFAULTS.wallpaperAntialias)
+        wallpaperAntialias: pick(boolOf, env.wallpaperAntialias, file.wallpaperAntialias, DEFAULTS.wallpaperAntialias),
+        theme: themeOf(env.theme, file.theme)
     };
 }

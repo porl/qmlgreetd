@@ -16,7 +16,7 @@ import "NightSkySim.js" as Sim
 ShellRoot {
     id: shell
 
-    readonly property Theme theme: Theme {}
+    readonly property Theme theme: Theme { palette: shell.greeter.themePalette }
     readonly property PowerCaps powerCaps: PowerCaps {}
     property Greeter greeter: Greeter {}
 

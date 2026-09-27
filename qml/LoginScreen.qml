@@ -27,6 +27,18 @@ FocusScope {
     readonly property int cFontSmall: theme ? theme.fontSizeSmall : 14
     readonly property int cFontTiny: theme ? theme.fontSizeTiny : 12
 
+    readonly property var chosenUser: greeter ? greeter.chosenUserObject : null
+
+    // An avatar the greeter can show, as a QML url. The enumerator only reports
+    // icons it could stat; a missing or unreadable file leaves the initial.
+    function avatarSource(user) {
+        return user && user.avatar ? "file://" + user.avatar : "";
+    }
+
+    function userName(user) {
+        return user ? (user.display_name || user.username) : "";
+    }
+
     readonly property bool hasUser: greeter !== null && greeter.chosenUser.length > 0
     readonly property bool choosingUser: greeter !== null && greeter.usersExpanded
     readonly property bool choosingSession: greeter !== null && greeter.sessionsExpanded
@@ -99,6 +111,16 @@ FocusScope {
                     }
                 }
 
+                Avatar {
+                    Layout.preferredWidth: 30
+                    Layout.preferredHeight: 30
+                    visible: screen.chosenUser !== null && !screen.choosingUser && greeter.stage !== "finished"
+                    source: screen.avatarSource(screen.chosenUser)
+                    name: screen.userName(screen.chosenUser)
+                    textColor: screen.cSubtext
+                    fontFamily: screen.cFont
+                }
+
                 Text {
                     Layout.fillWidth: true
                     color: screen.cText
@@ -140,10 +162,26 @@ FocusScope {
                     radius: 8
                     color: index === (greeter ? greeter.userCursor : -1) ? screen.cSurfaceAlt : "transparent"
 
-                    Text {
+                    Avatar {
+                        id: rowAvatar
+
                         anchors {
                             left: parent.left
-                            leftMargin: 12
+                            leftMargin: 8
+                            verticalCenter: parent.verticalCenter
+                        }
+                        width: 24
+                        height: 24
+                        source: screen.avatarSource(modelData)
+                        name: screen.userName(modelData)
+                        textColor: screen.cSubtext
+                        fontFamily: screen.cFont
+                    }
+
+                    Text {
+                        anchors {
+                            left: rowAvatar.right
+                            leftMargin: 8
                             verticalCenter: parent.verticalCenter
                         }
 

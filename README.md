@@ -11,7 +11,8 @@ bundled UI (`qml/LoginScreen.qml`) is an example, not the coupling point.
 
 ## Status
 
-Implemented and tested: the greetd transport, auth state machine, enumeration,
+Implemented and tested: the greetd transport, auth state machine, enumeration
+(including AccountsService real names and avatars when the daemon is running),
 `Exec` parsing, the fake backend, the bundled UI (user preselect, parallel
 session choice, type-and-Enter login, remembered state), a watchdog and the
 JSON config file. The bundled UI runs on Hyprland and shares the
@@ -20,7 +21,7 @@ the login screen has the same power block, network/brightness popouts and
 capability-aware session menu. Power actions go through `qmlgreetd power` (`off`,
 `reboot`, `suspend`, `hibernate`; gated by `QMLGREETD_POWER`). The default
 package bundles the binary, the merged QML tree, and a `qmlgreetd-greeter`
-runner. Not yet done: AccountsService enrichment and real-host validation.
+runner. Not yet done: real-host validation.
 
 ## Configuration
 
@@ -41,18 +42,42 @@ wins over the environment.
 | `wallpaperBuildings` | `QMLGREETD_WALLPAPER_BUILDINGS` | `true` | the city |
 | `wallpaperMissiles` | `QMLGREETD_WALLPAPER_MISSILES` | `false` | missile command |
 | `wallpaperAntialias` | `QMLGREETD_WALLPAPER_ANTIALIAS` | `true` | antialiased sky dots |
+| `theme` | `QMLGREETD_THEME` | qcommon's Mocha roles | hex colour overrides |
+
+`theme` is an object of colour overrides for the roles qcommon's `Theme.qml`
+defines (`base`, `backdrop`, `surface`, `surfaceAlt`, `border`, `bar`, `text`,
+`subtext`, `overlay`, `accent`, `danger`, `skyTop`, `skyBottom`, `buildingGlow`,
+`starGlow`, `moonGlow`, `missileTrail`, `explosionGlow`). Only `#rgb`,
+`#rrggbb` and `#aarrggbb` values are accepted, validated per layer, so a typo
+falls through to the environment and then to the role's default; a deployment
+only needs to name the roles it changes. `QMLGREETD_THEME` takes the same block
+as a JSON string.
 
 `QMLGREETD_CONFIG` points the greeter at a different file (development runs):
 
 ```json
 {
   "wallpaperMode": "greeter",
-  "wallpaperFps": 6
+  "wallpaperFps": 6,
+  "theme": { "accent": "#f38ba8" }
 }
 ```
 
 Power actions are deliberately not part of the config: `QMLGREETD_POWER` is a
 capability the runner grants, not a look.
+
+## AccountsService
+
+The login users come from `/etc/passwd` (UID ≥ `UID_MIN`, with a login shell).
+When `accountsservice` is installed and running, each user's real name and
+avatar are overlaid from it, by username; without the daemon the greeter just
+shows the passwd data. Avatars are read from the icon file AccountsService
+reports, and are dropped when that file does not exist or cannot be read. That
+default is `$HOME/.face`, which a greeter running as its own user cannot reach
+when home directories are mode 0700 (the NixOS default), so on such hosts put
+the image in `/var/lib/AccountsService/icons/<username>` and set the user's
+`Icon=` keyfile entry to it. A user with no avatar shows the first letter of
+their display name instead.
 
 ## Try the UI against the fake backend
 

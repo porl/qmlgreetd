@@ -44,11 +44,13 @@ fn main() -> ExitCode {
 
 fn enumerate_command() -> ExitCode {
     let data_dirs = std::env::var("XDG_DATA_DIRS").unwrap_or_default();
+    let mut users = enumerate::users::list_users(
+        &enumerate::users::read_passwd(),
+        enumerate::users::uid_min(),
+    );
+    enumerate::accounts::enrich(&mut users, &enumerate::accounts::list());
     let report = Report {
-        users: enumerate::users::list_users(
-            &enumerate::users::read_passwd(),
-            enumerate::users::uid_min(),
-        ),
+        users,
         sessions: enumerate::sessions::load_sessions(&enumerate::sessions::session_dirs(
             &data_dirs,
         )),

@@ -32,7 +32,8 @@ QtObject {
             wallpaperShowers: Quickshell.env("QMLGREETD_WALLPAPER_SHOWERS"),
             wallpaperBuildings: Quickshell.env("QMLGREETD_WALLPAPER_BUILDINGS"),
             wallpaperMissiles: Quickshell.env("QMLGREETD_WALLPAPER_MISSILES"),
-            wallpaperAntialias: Quickshell.env("QMLGREETD_WALLPAPER_ANTIALIAS")
+            wallpaperAntialias: Quickshell.env("QMLGREETD_WALLPAPER_ANTIALIAS"),
+            theme: Quickshell.env("QMLGREETD_THEME")
         }, file.text());
         if (resolved.invalid)
             console.warn("qmlgreetd: ignoring malformed config file " + config.path);
@@ -49,4 +50,5 @@ QtObject {
     readonly property bool wallpaperBuildings: values.wallpaperBuildings
     readonly property bool wallpaperMissiles: values.wallpaperMissiles
     readonly property bool wallpaperAntialias: values.wallpaperAntialias
+    readonly property var theme: values.theme
 }
