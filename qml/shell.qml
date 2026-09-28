@@ -20,6 +20,12 @@ ShellRoot {
     readonly property PowerCaps powerCaps: PowerCaps {}
     property Greeter greeter: Greeter {}
 
+    // Escape lands on the card or (while it is open) the session menu, never on
+    // the bars, which take no keyboard focus. Both paths call closeTemporaryUi,
+    // which closes the menu and asks every card and bar to reset through this
+    // signal: cards clear back to password entry, bars close their overlays.
+    signal resetRequested()
+
     // The night sky behind the login card. The mode and toggles come from the
     // greeter config (GreeterConfig.qml); the card sits on a higher layer (see
     // its PanelWindow below).
@@ -81,12 +87,22 @@ ShellRoot {
         model: Quickshell.screens
 
         delegate: Bar {
+            id: bar
+
             required property ShellScreen modelData
 
             theme: shell.theme
             screen: modelData
             showWorkspaces: false
             onPowerRequested: sessionMenu.toggle()
+
+            Connections {
+                target: shell
+
+                function onResetRequested() {
+                    bar.closeOverlays();
+                }
+            }
         }
     }
 
@@ -122,9 +138,24 @@ ShellRoot {
             WlrLayershell.namespace: "quickshell-greeter"
 
             Loader {
+                id: card
+
                 anchors.fill: parent
                 source: shell.greeter.uiPath
-                onLoaded: item.greeter = shell.greeter
+                onLoaded: {
+                    item.greeter = shell.greeter;
+                    if (item.resetRequested)
+                        item.resetRequested.connect(shell.closeTemporaryUi);
+                }
+            }
+
+            Connections {
+                target: shell
+
+                function onResetRequested() {
+                    if (card.item && typeof card.item.reset === "function")
+                        card.item.reset();
+                }
             }
         }
     }
@@ -137,6 +168,7 @@ ShellRoot {
         canSuspend: shell.powerCaps.canSuspend
         canHibernate: shell.powerCaps.canHibernate
         onActionTriggered: action => shell.runAction(action)
+        onEscaped: shell.closeTemporaryUi()
     }
 
     // The bar's power block opens the menu; this exposes the same toggle to a
@@ -147,6 +179,14 @@ ShellRoot {
         function toggle(): void {
             sessionMenu.toggle();
         }
+    }
+
+    // Both Escape paths — the card's own signal and the session menu's — land
+    // here: close the menu, then have every card and bar reset through
+    // `resetRequested`.
+    function closeTemporaryUi(): void {
+        sessionMenu.close();
+        resetRequested();
     }
 
     function runAction(action: string): void {

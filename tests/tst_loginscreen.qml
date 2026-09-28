@@ -54,6 +54,13 @@ TestCase {
         greeter: greeterStub
     }
 
+    SignalSpy {
+        id: resetSpy
+
+        target: screen
+        signalName: "resetRequested"
+    }
+
     function passwordField() {
         var field = findChild(screen, "passwordField");
         verify(field !== null, "found the password field");
@@ -127,6 +134,13 @@ TestCase {
         field.text = "";
         keyClick(Qt.Key_Escape);
         compare(field.text, "");
+    }
+
+    function test_escape_asks_the_shell_to_close_its_overlays() {
+        passwordField();
+        resetSpy.clear();
+        keyClick(Qt.Key_Escape);
+        compare(resetSpy.count, 1, "escape asks the shell to close its temporary surfaces");
     }
 
     function test_enter_still_submits_and_clears() {

@@ -11,6 +11,10 @@ FocusScope {
 
     property var greeter: null
 
+    // Escape resets the card (see reset()); the shell listens too, so it can
+    // close its own temporary surfaces (the session menu, bar popouts).
+    signal resetRequested()
+
     readonly property var theme: greeter ? greeter.theme : null
     readonly property color cSurface: theme ? theme.surface : "#e6000000"
     readonly property color cSurfaceAlt: theme ? theme.surfaceAlt : "#45475a"
@@ -476,6 +480,7 @@ FocusScope {
             event.accepted = true;
         } else if (event.key === Qt.Key_Escape) {
             reset();
+            resetRequested();
             event.accepted = true;
         }
     }
