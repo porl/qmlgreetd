@@ -5,7 +5,6 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
-import Quickshell.Io
 
 FocusScope {
     id: screen
@@ -142,6 +141,7 @@ FocusScope {
 
             ListView {
                 id: userList
+                objectName: "userList"
 
                 Layout.fillWidth: true
                 Layout.preferredHeight: Math.min(5, Math.max(1, greeter ? greeter.users.length : 1)) * 40
@@ -208,15 +208,13 @@ FocusScope {
                         if (greeter.users.length > 0)
                             greeter.chooseUser(greeter.users[greeter.userCursor].username);
                         event.accepted = true;
-                    } else if (event.key === Qt.Key_Escape && screen.hasUser) {
-                        greeter.usersExpanded = false;
-                        event.accepted = true;
                     }
                 }
             }
 
             TextField {
                 id: passwordField
+                objectName: "passwordField"
 
                 Layout.fillWidth: true
                 Layout.preferredHeight: 40
@@ -304,6 +302,7 @@ FocusScope {
 
             ListView {
                 id: sessionList
+                objectName: "sessionList"
 
                 Layout.fillWidth: true
                 Layout.preferredHeight: Math.min(4, Math.max(1, greeter ? greeter.sessions.length : 1)) * 32
@@ -354,9 +353,6 @@ FocusScope {
                         if (greeter.sessions.length > 0)
                             greeter.chooseSession(greeter.sessions[greeter.sessionCursor].id);
                         event.accepted = true;
-                    } else if (event.key === Qt.Key_Escape) {
-                        greeter.sessionsExpanded = false;
-                        event.accepted = true;
                     }
                 }
             }
@@ -372,6 +368,7 @@ FocusScope {
 
             TextField {
                 id: promptField
+                objectName: "promptField"
 
                 Layout.fillWidth: true
                 Layout.preferredHeight: 40
@@ -453,11 +450,32 @@ FocusScope {
         }
     }
 
+    // Escape is the card's "reset to password entry": close the temporary
+    // lists, clear both text fields, and focus the visible one. Surfaces
+    // outside the card (the shell's session menu, the bar popouts) are not
+    // reachable from here; the menu closes on its own Escape.
+    function reset() {
+        if (!greeter || greeter.stage === "finished")
+            return;
+        if (hasUser)
+            greeter.usersExpanded = false;
+        greeter.sessionsExpanded = false;
+        passwordField.text = "";
+        promptField.text = "";
+        if (enteringPassword)
+            passwordField.forceActiveFocus();
+        else if (enteringPrompt)
+            promptField.forceActiveFocus();
+    }
+
     Keys.onPressed: event => {
         if (!greeter)
             return;
         if (event.key === Qt.Key_Q && event.modifiers & Qt.ControlModifier) {
             greeter.quit();
+            event.accepted = true;
+        } else if (event.key === Qt.Key_Escape) {
+            reset();
             event.accepted = true;
         }
     }

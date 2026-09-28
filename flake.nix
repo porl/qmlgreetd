@@ -72,21 +72,24 @@
       checks = forAllSystems (pkgs: {
         build = qmlgreetd pkgs;
 
-        # The pure config resolution (qml/GreeterConfig.js), like qcommon's
-        # NightSkySim tests: qmltestrunner offscreen, no Wayland needed. The
-        # source is copied by directory rather than as the flake tree, so a new
-        # test is gated before it is committed.
+        # The bundled UI is tested against the tree it ships in: qcommon's
+        # components merged under this project's (see qmlTree), with the
+        # Quickshell QML modules stubbed (they are linktarget plugins that only
+        # load inside Quickshell). The source is copied by directory rather than
+        # as the flake tree, so a new test is gated before it is committed.
         tests = pkgs.runCommand "qmlgreetd-tests" {
           nativeBuildInputs = [ pkgs.qt6.qtdeclarative ];
         } ''
           mkdir src
-          cp -r ${./qml} src/qml
+          mkdir -p src/qml
+          cp -r ${qcommon.packages.${pkgs.stdenv.hostPlatform.system}.default}/share/qcommon/qml/. src/qml/
+          cp -r ${./qml}/. src/qml/
           cp -r ${./tests} src/tests
           cd src
           export HOME=$TMPDIR
           export XDG_CACHE_HOME=$TMPDIR/cache
           export QT_QPA_PLATFORM=offscreen
-          export QML2_IMPORT_PATH="${pkgs.qt6.qtdeclarative}/lib/qt-6/qml"
+          export QML2_IMPORT_PATH="${pkgs.qt6.qtdeclarative}/lib/qt-6/qml:$PWD/tests/stubs"
           qmltestrunner -input tests
           touch $out
         '';
