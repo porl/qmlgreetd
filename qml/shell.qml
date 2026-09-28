@@ -103,6 +103,10 @@ ShellRoot {
                     bar.closeOverlays();
                 }
             }
+
+            // The calendar's focus grab gives it the keyboard while pinned, so
+            // its Escape never reaches the card; chain it like the menu.
+            onEscaped: shell.closeTemporaryUi()
         }
     }
 
